@@ -1,9 +1,11 @@
 <?php
 namespace App\Controller\Admin;
 
+use App\Entity\Option;
 use App\Entity\Property;
 use App\Form\PropertyType;
 use Doctrine\Common\Persistence\ObjectManager;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Repository\PropertyRepository;
@@ -32,7 +34,10 @@ class AdminPropertyController extends AbstractController{
      */
     public function index(){
         $properties = $this->repository->findAll();
-        return $this->render('admin/property/index.html.twig', compact('properties'));
+        return $this->render('admin/property/index.html.twig', [
+            'properties' => $properties,
+            'current_menu' => 'admin'
+            ]);
     }
 
     /**
@@ -53,7 +58,8 @@ class AdminPropertyController extends AbstractController{
 
         return $this->render('admin/property/new.html.twig', [
             'property' => $property,
-            'form' => $form->createView()
+            'form' => $form->createView(),
+            'current_menu' => 'admin'
         ]);
     }
 
@@ -69,6 +75,10 @@ class AdminPropertyController extends AbstractController{
 
         //Pour update
         if($form->isSubmitted() && $form->isValid()){
+//            //suppression de l'image en cache si elle est modifiée
+//            if($property->getImageFile() instanceof UploadedFile) {
+//                $cacheManager->remove($helper->asset($property, 'imageFile'));
+//            }
             $this->em->flush();
             $this->addFlash('success', 'Bien modifié avec succès !');
             return $this->redirectToRoute('admin.property.index');
@@ -76,7 +86,8 @@ class AdminPropertyController extends AbstractController{
 
         return $this->render('admin/property/edit.html.twig', [
             'property' => $property,
-            'form' => $form->createView()
+            'form' => $form->createView(),
+            'current_menu' => 'admin'
         ]);
     }
 

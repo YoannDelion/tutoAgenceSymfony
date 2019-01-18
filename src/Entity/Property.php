@@ -2,11 +2,20 @@
 
 namespace App\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Cocur\Slugify\Slugify;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\HttpFoundation\File\File;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\Validator\Constraints as Assert; //sers a verifier les données
+use Vich\UploaderBundle\Mapping\Annotation as Vich;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\PropertyRepository")
+ * @UniqueEntity("title") //----> Verifier que le bien est unique par rapport au title
+ * @Vich\Uploadable()
  */
 class Property
 {
@@ -19,6 +28,7 @@ class Property
     public function __construct()
     {
         $this->created_at = new \DateTime();
+        $this->options = new ArrayCollection();
     }
 
     /**
@@ -29,6 +39,20 @@ class Property
     private $id;
 
     /**
+     * @var string|null
+     * @ORM\Column(type="string", length=255)
+     */
+    private $filename;
+
+    /**
+     * @var File|null
+     * @Assert\Image(mimeTypes="image/jpeg")
+     * @Vich\UploadableField(mapping="property_image", fileNameProperty="filename")
+     */
+    private $imageFile;
+
+    /**
+     * @Assert\Length(min=5, max=255) //verifier les données
      * @ORM\Column(type="string", length=255)
      */
     private $title;
@@ -40,6 +64,7 @@ class Property
 
     /**
      * @ORM\Column(type="integer")
+     * @Assert\Range(min=10, max=400) //verifier les données
      */
     private $surface;
 
@@ -80,6 +105,7 @@ class Property
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Assert\Regex("/^[0-9]{5}$/") //verifier le code postal : 5 chiffres
      */
     private $postal_code;
 
@@ -92,6 +118,16 @@ class Property
      * @ORM\Column(type="boolean", options={"default": false})
      */
     private $sold;
+
+    /**
+     * @ORM\ManyToMany(targetEntity="App\Entity\Option", inversedBy="properties")
+     */
+    private $options;
+
+    /**
+     * @ORM\Column(type="datetime")
+     */
+    private $updated_at;
 
     public function getId(): ?int
     {
@@ -110,7 +146,8 @@ class Property
         return $this;
     }
 
-    public function getSlug(): string {
+    public function getSlug(): string
+    {
         $slugify = new Slugify();
         return $slugify->slugify($this->title);
     }
@@ -187,7 +224,8 @@ class Property
         return $this;
     }
 
-    public function getFormatedPrice():string {
+    public function getFormatedPrice(): string
+    {
         return number_format($this->price, 0, '', ' ');
     }
 
@@ -203,7 +241,8 @@ class Property
         return $this;
     }
 
-    public function getHeatType():string {
+    public function getHeatType(): string
+    {
         return self::HEAT[$this->heat];
     }
 
@@ -244,7 +283,6 @@ class Property
     }
 
 
-
     public function getCreatedAt(): ?\DateTimeInterface
     {
         return $this->created_at;
@@ -265,6 +303,88 @@ class Property
     public function setSold(bool $sold): self
     {
         $this->sold = $sold;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getFilename(): ?string
+    {
+        return $this->filename;
+    }
+
+    /**
+     * @param string|null $filename
+     * @return Property
+     */
+    public function setFilename(?string $filename): Property
+    {
+        $this->filename = $filename;
+        return $this;
+    }
+
+    /**
+     * @return File|null
+     */
+    public function getImageFile(): ?File
+    {
+        return $this->imageFile;
+    }
+
+    /**
+     * @param File|null $imageFile
+     * @return Property
+     */
+    public function setImageFile(?File $imageFile): Property
+    {
+        $this->imageFile = $imageFile;
+        if($this->imageFile instanceof UploadedFile){
+            $this->updated_at = new \DateTime('now');
+        }
+        return $this;
+    }
+
+
+
+
+    /**
+     * @return Collection|Option[]
+     */
+    public function getOptions(): Collection
+    {
+        return $this->options;
+    }
+
+    public function addOption(Option $option): self
+    {
+        if (!$this->options->contains($option)) {
+            $this->options[] = $option;
+            $option->addProperty($this);
+        }
+
+        return $this;
+    }
+
+    public function removeOption(Option $option): self
+    {
+        if ($this->options->contains($option)) {
+            $this->options->removeElement($option);
+            $option->removeProperty($this);
+        }
+
+        return $this;
+    }
+
+    public function getUpdatedAt(): ?\DateTimeInterface
+    {
+        return $this->updated_at;
+    }
+
+    public function setUpdatedAt(\DateTimeInterface $updated_at): self
+    {
+        $this->updated_at = $updated_at;
 
         return $this;
     }

@@ -5,9 +5,26 @@
 {% block body %}
     <div class="jumbotron">
         <div class="container">
+
+            {% for message in app.flashes('success') %}
+            <div class="alert alert-success">
+                {{ message }}
+            </div>
+            {% endfor %}
+
+            {% if not form.vars.valid %}
+            <div class="alert alert-danger">
+                Erreur dans le remplissage du formulaire
+            </div>
+            {% endif %}
+
             <div class="row">
                 <div class="col-md-8">
-
+                    {% if property.filename %}
+                        <img src="{{ vich_uploader_asset(property, 'imageFile') | imagine_filter('medium') }}" class="card-img-top" alt="Apperçu du bien">
+                    {% else %}
+                        <img src="{{ '/images/properties/empty.jpg' | imagine_filter('medium') }}" class="card-img-top" alt="Apperçu du bien">
+                    {% endif %}
                 </div>
                 <div class="col-md-4">
                     <h1>{{ property.title }}</h1>
@@ -15,6 +32,20 @@
                     <div class="text-primary" style="font-size: 4rem;font-weight: bold">{{ property.formatedPrice }}€
                     </div>
                     <a href="#" class="btn btn-primary">Contacter l'agence</a>
+                    <div id="contactForm" class="mt-4">
+                        {{ form_start(form) }}
+                        <div class="row">
+                            <div class="col">{{ form_row(form.firstname) }}</div>
+                            <div class="col">{{ form_row(form.lastname) }}</div>
+                        </div>
+                        <div class="row">
+                            <div class="col">{{ form_row(form.phone) }}</div>
+                            <div class="col">{{ form_row(form.mail) }}</div>
+                        </div>
+                        {{ form_rest(form) }}
+                        <div class="form-group"><button class="btn btn-primary">Envoyer</button></div>
+                        {{ form_end(form) }}
+                    </div>
                 </div>
             </div>
         </div>
@@ -49,6 +80,11 @@
             </div>
             <div class="col-md-4">
                 <h2>Spécificités</h2>
+                <ul class="list-group">
+                    {% for option in property.options %}
+                        <li class="list-group-item">{{ option.name }}</li>
+                    {% endfor %}
+                </ul>
             </div>
         </div>
     </div>

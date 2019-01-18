@@ -5,6 +5,8 @@
     <title>{% block title %}Welcome!{% endblock %}</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" rel="stylesheet"
           integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.5/css/select2.min.css">
+    {#<link rel="stylesheet" href="{{ asset('build/app.css') }}">#}
     {% block stylesheets %}{% endblock %}
 </head>
 <body>
@@ -21,12 +23,28 @@
                 <a class="nav-link {% if current_menu is defined and current_menu == 'properties' %}active{% endif %}"
                    href="{{ path('property.index') }}">Acheter</a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link {% if current_menu is defined and current_menu == 'admin' %}active{% endif %}" href="{{ path('admin.property.index') }}">Administration</a>
+            </li>
 
         </ul>
+        {% if app.user %}
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a href="{{ path('logout') }}" class="nav-link">Déconnexion</a>
+                </li>
+            </ul>
+        {% endif %}
     </div>
 </nav>
 {% block body %}{% endblock %}
-{% block javascripts %}{% endblock %}
+
+{% block javascripts %}
+
+{% endblock %}
+
+
+
 <script src="https://code.jquery.com/jquery-3.3.1.min.js"
         integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
         crossorigin="anonymous"></script>
@@ -36,7 +54,10 @@
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"
         integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
         crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.5/js/select2.min.js"></script>
 <script>
+    $('select').select2();
+
     $(document).ready(function() {
         window.setTimeout(function () {
             $(".alert").fadeTo(500, 0).slideUp(500, function () {
