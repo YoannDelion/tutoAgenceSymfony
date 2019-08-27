@@ -336,6 +336,7 @@ class Property
     /**
      * @param File|null $imageFile
      * @return Property
+     * @throws \Exception
      */
     public function setImageFile(?File $imageFile): Property
     {
